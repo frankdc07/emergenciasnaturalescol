@@ -51,10 +51,10 @@ d3.tsv("datos/emergencias_por_departamento.tsv", function(d) {
 }, function(error, data) {
   if (error) throw error;
   
-    data.sort(function(a, b) { return a.value - b.value; });
+    data.sort(function(a, b) { return a.Emergencias_ocurridas - b.Emergencias_ocurridas; });
   
-    x.domain([0, d3.max(data, function(d) { return d.value; })]);
-    y.domain(data.map(function(d) { return d.area; })).padding(0.1);
+    x.domain([0, d3.max(data, function(d) { return d.Emergencias_ocurridas; })]);
+    y.domain(data.map(function(d) { return d.Departamento; })).padding(0.1);
 
     g.append("g")
         .attr("class", "x axis")
@@ -71,14 +71,14 @@ d3.tsv("datos/emergencias_por_departamento.tsv", function(d) {
         .attr("class", "bar")
         .attr("x", 0)
         .attr("height", y.bandwidth())
-        .attr("y", function(d) { return y(d.area); })
-        .attr("width", function(d) { return x(d.value); })
+        .attr("y", function(d) { return y(d.Departamento); })
+        .attr("width", function(d) { return x(d.Emergencias_ocurridas); })
         .on("mousemove", function(d){
             tooltip
               .style("left", d3.event.pageX - 50 + "px")
               .style("top", d3.event.pageY - 70 + "px")
               .style("display", "inline-block")
-              .html((d.area) + "<br>" + "£" + (d.value));
+              .html((d.Departamento) + "<br>" + "£" + (d.Emergencias_ocurridas));
         })
         .on("mouseout", function(d){ tooltip.style("display", "none");});
 });
