@@ -39,27 +39,26 @@ var svg = d3.select("svg"),
   
 var tooltip = d3.select("body").append("div").attr("class", "toolTip");
   
-var x = d3.scalePow(3).range([0, width]);
+var x = d3.scaleLinear().range([0, width]);
 var y = d3.scaleBand().range([height, 0]);
 
 var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   
-d3.tsv("datos/emergencias_por_departamento.tsv", function(d) {
-  d.frequency = +d.frequency;
+d3.tsv("datos/impacto_eventos.tsv", function(d) {
   return d;
 }, function(error, data) {
   if (error) throw error;
   
-    data.sort(function(a, b) { return a.Emergencias_ocurridas - b.Emergencias_ocurridas; });
+    data.sort(function(a, b) { return a.eventos - b.eventos; });
   
-    x.domain([0, d3.max(data, function(d) { return d.Emergencias_ocurridas; })]);
-    y.domain(data.map(function(d) { return d.Departamento; })).padding(0.1);
+    x.domain([0, d3.max(data, function(d) { return parseInt(d.eventos); })]);
+    y.domain(data.map(function(d) { return String(d.departamento); })).padding(0.1);
 
     g.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x).ticks(5).tickFormat(function(d) { return parseInt(d / 1000); }).tickSizeInner([-height]));
+        //.call(d3.axisBottom(x).ticks(5).tickFormat(function(d) { return parseInt(d / 1000); }).tickSizeInner([-height]));
 
     g.append("g")
         .attr("class", "y axis")
@@ -71,14 +70,14 @@ d3.tsv("datos/emergencias_por_departamento.tsv", function(d) {
         .attr("class", "bar")
         .attr("x", 0)
         .attr("height", y.bandwidth())
-        .attr("y", function(d) { return y(d.Departamento); })
-        .attr("width", function(d) { return x(d.Emergencias_ocurridas); })
+        .attr("y", function(d) { return y(d.departamento); })
+        .attr("width", function(d) { return x(d.eventos); })
         .on("mousemove", function(d){
             tooltip
               .style("left", d3.event.pageX - 50 + "px")
               .style("top", d3.event.pageY - 70 + "px")
               .style("display", "inline-block")
-              .html((d.Departamento) + "<br>" + (d.Emergencias_ocurridas));
+              .html((d.departamento) + "<br>" + (d.eventos));
         })
         .on("mouseout", function(d){ tooltip.style("display", "none");});
 });
