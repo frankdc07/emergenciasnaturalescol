@@ -6,7 +6,7 @@ body {
   background-color: #F1F3F3    
 }
 .bar {
-  fill: #6F257F;
+  fill: #F5DA81;
 }
 .axis path,
 .axis line {
@@ -28,12 +28,22 @@ body {
   padding: 14px;
   text-align: center;
 }
+
 </style>
-<svg width="1200" height="500"></svg>
+<body>
+<H3>
+  ¿Conoces el departamento mas afectado por la naturaleza en Colombia?
+</H3>
+<!--<p>
+  Teniendo en cuenta los datos recolectados de las diferentes emergencias naturales ocurridas en Colombia hasta antes del 2013
+</p>-->
+<svg width="700" height="400"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
+
+//variables plara bar chart
 var svg = d3.select("svg"),
-    margin = {top: 20, right: 20, bottom: 30, left: 80},
+    margin = {top: 20, right: 20, bottom: 30, left: 100},
     width = +svg.attr("width") - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom;
   
@@ -44,6 +54,47 @@ var y = d3.scaleBand().range([height, 0]);
 
 var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//Variables para scatter plot
+
+// set the dimensions and margins of the graph
+var margin1 = {top: 20, right: 20, bottom: 70, left: 80},
+    width1 = 560 - margin1.left - margin1.right,
+    height1 = 560 - margin1.top - margin1.bottom;
+
+// parse the date / time
+var parseTime = d3.timeParse("%d-%b-%y");
+var formatTime = d3.timeFormat("%e %B");
+
+// set the ranges
+var x1 = d3.scaleLinear().range([0, width1]);
+var y1 = d3.scaleLinear().range([height1, 0]);
+
+var cValue = function(d) { return d.Manufacturer;};
+//var color = d3.scale.category10();
+var colorScale = d3.scaleOrdinal("schemeCategory20");
+
+
+// define the line
+/*var valueline = d3.line()
+    .x(function(d) { return x1(d.date); })
+    .y(function(d) { return y1(d.close); });*/
+
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+// append the svg obgect to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg2 = d3.select("body").append("svg")
+    .attr("width", width1 + margin1.left + margin1.right)
+    .attr("height", height1 + margin1.top + margin1.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin1.left + "," + margin1.top + ")");
+
+
   
 d3.tsv("datos/impacto_eventos.tsv", function(d) {
   return d;
@@ -80,5 +131,78 @@ d3.tsv("datos/impacto_eventos.tsv", function(d) {
               .html((d.departamento) + "<br>" + (d.eventos));
         })
         .on("mouseout", function(d){ tooltip.style("display", "none");});
+//});
+
+
+
+// Get the data
+/*d3.csv("data.csv", function(error, data2) {
+  if (error) throw error;
+
+  // format the data
+  data2.forEach(function(d) {
+      d.date = parseTime(d.date);
+      d.close = +d.close;
+  });*/
+
+  // scale the range of the data
+  x1.domain(d3.extent(data, function(d) { return d.eventos; }));
+  y1.domain([0, d3.max(data, function(d) { return d.familias; })]);
+
+  // add the valueline path.
+  /*svg2.append("path")
+     .data([data2])
+     .attr("class", "line")
+     .attr("d", valueline);*/
+
+  // add the dots with tooltips
+  svg2.selectAll("dot")
+     .data(data)
+   .enter().append("circle")
+     .attr("r", 5)
+     .attr("cx", function(d) { return x1(d.eventos); })
+     .attr("cy", function(d) { return y1(d.familias); })
+     .style("fill", function(d) { return colorScale(d.departamento); })
+     .on("mouseover", function(d) {   
+            tooltip
+              .style("left", d3.event.pageX - 100 + "px")
+              .style("top", d3.event.pageY - 100 + "px")
+              .style("display", "inline-block")
+              .html(
+                d.departamento + // The first <a> tag
+                "<br/>Eventos: "  + d.eventos +                         // closing </a> tag
+                "<br/>Familias: "  + d.familias);})
+
+        .on("mouseout", function(d){ tooltip.style("display", "none")});
+
+  // add the X Axis
+  svg2.append("g")
+      .attr("transform", "translate(0," + height1 + ")")
+      .call(d3.axisBottom(x1));
+
+  // text label for the x axis
+  svg2.append("text")             
+      .attr("transform",
+            "translate(" + (width1/2) + " ," + 
+                           (height1 + margin1.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("# Emergencias ocurridas");
+
+  // add the Y Axis
+  svg2.append("g")
+      .call(d3.axisLeft(y1));
+  // text label for the y axis
+  svg2.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin1.left)
+      .attr("x",0 - (height1 / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("# Familias afectadas");
+
 });
+
 </script>
+
+</body>
+
