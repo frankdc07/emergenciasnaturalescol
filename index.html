@@ -1,126 +1,85 @@
 <!DOCTYPE html>
-<html>
+<meta charset="utf-8">
+<style>
+body {
+  margin: 15px;
+  background-color: #F1F3F3    
+}
+.bar {
+  fill: #6F257F;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #D4D8DA;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.x path {
+  display: none;
+}
+.toolTip {
+  position: absolute;
+  display: none;
+  min-width: 80px;
+  height: auto;
+  background: none repeat scroll 0 0 #ffffff;
+  border: 1px solid #6F257F;
+  padding: 14px;
+  text-align: center;
+}
+</style>
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 80},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom;
+  
+var tooltip = d3.select("body").append("div").attr("class", "toolTip");
+  
+var x = d3.scaleLinear().range([0, width]);
+var y = d3.scaleBand().range([height, 0]);
 
-<head>
-    <meta charset='utf-8' />
-    <title>Simple Bar chart</title>
-    <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
-    <style>
-        body {
-            font-family: "Arial", sans-serif;
-        }
-        
-        .bar {
-            fill: #5f89ad;
-        }
-        
-        .axis {
-            font-size: 13px;
-        }
-        
-        .axis path,
-        .axis line {
-            fill: none;
-            display: none;
-        }
-        
-        .label {
-            font-size: 13px;
-        }
-    </style>
+var g = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+d3.tsv("datos/emergencias_por_departamento.tsv", function(d) {
+  d.frequency = +d.frequency;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+  
+    data.sort(function(a, b) { return a.value - b.value; });
+  
+    x.domain([0, d3.max(data, function(d) { return d.value; })]);
+    y.domain(data.map(function(d) { return d.area; })).padding(0.1);
 
-</head>
+    g.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).ticks(5).tickFormat(function(d) { return parseInt(d / 1000); }).tickSizeInner([-height]));
 
-<body>
+    g.append("g")
+        .attr("class", "y axis")
+        .call(d3.axisLeft(y));
 
-    <div id="graphic"></div>
-
-    <script>
-        d3.tsv("datos/emergencias_por_departamento.tsv", function(d) {
-          d.frequency = +d.frequency;
-          return d;
-        }, function(error, data) {
-        if (error) throw error;
-
-        //sort bars based on value
-        data = data.sort(function (a, b) {
-            return d3.ascending(a.Departamento, b.Emergencias_ocurridas);
+    g.selectAll(".bar")
+        .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", 0)
+        .attr("height", y.bandwidth())
+        .attr("y", function(d) { return y(d.area); })
+        .attr("width", function(d) { return x(d.value); })
+        .on("mousemove", function(d){
+            tooltip
+              .style("left", d3.event.pageX - 50 + "px")
+              .style("top", d3.event.pageY - 70 + "px")
+              .style("display", "inline-block")
+              .html((d.area) + "<br>" + "£" + (d.value));
         })
-
-        //set up svg using margin conventions - we'll need plenty of room on the left for labels
-        var margin = {
-            top: 15,
-            right: 25,
-            bottom: 15,
-            left: 60
-        };
-
-        var width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
-
-        var svg = d3.select("#graphic").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        var x = d3.scale.linear()
-            .range([0, width])
-            .domain([0, d3.max(data, function (d) {
-                return d.Emergencias_ocurridas;
-            })]);
-
-        var y = d3.scale.ordinal()
-            .rangeRoundBands([height, 0], .1)
-            .domain(data.map(function (d) {
-                return d.Departamento;
-            }));
-
-        //make y axis to show bar names
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            //no tick marks
-            .tickSize(0)
-            .orient("left");
-
-        var gy = svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis)
-
-        var bars = svg.selectAll(".bar")
-            .data(data)
-            .enter()
-            .append("g")
-
-        //append rects
-        bars.append("rect")
-            .attr("class", "bar")
-            .attr("y", function (d) {
-                return y(d.Departamento);
-            })
-            .attr("height", y.rangeBand())
-            .attr("x", 0)
-            .attr("width", function (d) {
-                return x(d.Emergencias_ocurridas);
-            });
-
-        //add a value label to the right of each bar
-        bars.append("text")
-            .attr("class", "label")
-            //y position of the label is halfway down the bar
-            .attr("y", function (d) {
-                return y(d.Departamento) + y.rangeBand() / 2 + 4;
-            })
-            //x position is 3 pixels to the right of the bar
-            .attr("x", function (d) {
-                return x(d.Emergencias_ocurridas) + 3;
-            })
-            .text(function (d) {
-                return d.Emergencias_ocurridas;
-            });
-        });
-    </script>
-
-</body>
-
-</html>
+        .on("mouseout", function(d){ tooltip.style("display", "none");});
+});
+</script>
