@@ -31,14 +31,21 @@ body {
 
 </style>
 <body>
-<H3>
+<div style="background: black; height: 150px; ">
+<h1 style="color: white">
   ¿Conoces el departamento mas afectado por la naturaleza en Colombia?
-</H3>
-<!--<p>
-  Teniendo en cuenta los datos recolectados de las diferentes emergencias naturales ocurridas en Colombia hasta antes del 2013
-</p>-->
-<svg width="700" height="400"></svg>
+</h1>
+
+<p style="color: #F5DA81">
+  Teniendo en cuenta los datos recolectados de las diferentes emergencias naturales ocurridas en Colombia hasta antes del 2013 evidenciamos que el departamento que mas presenta emergencias a nivel nacional es Cundinamarca. Sin embargo, al colocar el numero de damnificados respecto a la cantidad de emergencias presentadas encontramos que Cundinamarca logra enfrentar mejor estos eventos presentando menos damnificados con 1996 eventos presentados en comparación con Córdoba o Bolivar donde se presentaron la mitad de los eventos y generaron el doble de familias damnificadas.
+</p>
+</div>
+<svg width="500" height="400"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<div>
+<table style="width: 100%">
+  <tr>
+    <th>
 <script>
 
 //variables plara bar chart
@@ -59,8 +66,8 @@ var g = svg.append("g")
 
 // set the dimensions and margins of the graph
 var margin1 = {top: 20, right: 20, bottom: 70, left: 80},
-    width1 = 560 - margin1.left - margin1.right,
-    height1 = 560 - margin1.top - margin1.bottom;
+    width1 = 500 - margin1.left - margin1.right,
+    height1 = 500 - margin1.top - margin1.bottom;
 
 // parse the date / time
 var parseTime = d3.timeParse("%d-%b-%y");
@@ -72,7 +79,7 @@ var y1 = d3.scaleLinear().range([height1, 0]);
 
 var cValue = function(d) { return d.Manufacturer;};
 //var color = d3.scale.category10();
-var colorScale = d3.scaleOrdinal("schemeCategory20");
+var colorScale = d3.scaleOrdinal(d3.schemeCategory20);
 
 
 // define the line
@@ -131,10 +138,17 @@ d3.tsv("datos/impacto_eventos.tsv", function(d) {
               .html((d.departamento) + "<br>" + (d.eventos));
         })
         .on("mouseout", function(d){ tooltip.style("display", "none");});
-//});
+});
 
+</script>
+</th>
+<th>
+<script>
 
-
+d3.tsv("datos/impacto_eventos.tsv", function(d) {
+  return d;
+}, function(error, data) {
+  if (error) throw error;
 // Get the data
 /*d3.csv("data.csv", function(error, data2) {
   if (error) throw error;
@@ -146,8 +160,8 @@ d3.tsv("datos/impacto_eventos.tsv", function(d) {
   });*/
 
   // scale the range of the data
-  x1.domain(d3.extent(data, function(d) { return d.eventos; }));
-  y1.domain([0, d3.max(data, function(d) { return d.familias; })]);
+  x1.domain(d3.extent(data, function(d) { return parseInt(d.eventos); }));
+  y1.domain([0, d3.max(data, function(d) { return parseInt(d.familias); })]);
 
   // add the valueline path.
   /*svg2.append("path")
@@ -203,6 +217,19 @@ d3.tsv("datos/impacto_eventos.tsv", function(d) {
 });
 
 </script>
-
+</th>
+</tr>
+</table>
+</div>
+<div style="background: black; position: bottom; height: 100px; align-content: center">
+  <center>
+  <p style="color: white;">
+    Jose Franklyn Moreano Medina
+    <br/>
+    Universidad de los Andes
+    <br/>
+    Codigo 201018808
+  </p>
+</center>
 </body>
 
