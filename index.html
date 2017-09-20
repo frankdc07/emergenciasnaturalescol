@@ -103,7 +103,7 @@ var svg2 = d3.select("body").append("svg")
 
 
   
-d3.tsv("datos/impacto_eventos.tsv", function(d) {
+d3.tsv("datos/data.tsv", function(d) {
   return d;
 }, function(error, data) {
   if (error) throw error;
